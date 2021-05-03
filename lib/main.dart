@@ -1,15 +1,42 @@
 import 'package:flutter/material.dart';
+import 'package:responsive_builder/responsive_builder.dart';
 import 'package:routemaster/routemaster.dart';
 import 'package:routemaster_eval/widgets.dart';
 
 final routes = RouteMap(routes: {
-  '/': (_) {
+  '/': (info) {
     return MaterialPage(
-      child: ListScreen(
-        onSelected: (context, id) {
-          Routemaster.of(context).push('/detail/$id');
-        },
-      ),
+      child: Builder(builder: (context) {
+        final isMobile = getValueForScreenType<bool>(
+          context: context,
+          mobile: true,
+          tablet: false,
+        );
+
+        final String? id = info.queryParameters['id'];
+        return ListScreen(
+          id: id,
+          onSelected: (context, id) {
+            if (isMobile) {
+              Routemaster.of(context).push('/detail/$id');
+            } else {
+              Routemaster.of(context).replace('/?id=$id');
+            }
+          },
+          onDetailTapped: (context, id) {
+            if (isMobile) {
+              print('ignore!');
+              return;
+            }
+
+            // Expected to work, but will incorrectly link to /final
+            // Routemaster.of(context).push('final');
+
+            // Works but will not set the back url to /?id=$id, but instead '/'
+            Routemaster.of(context).push('/detail/final?id=$id');
+          },
+        );
+      }),
     );
   },
   '/detail/:id': (info) {
@@ -22,6 +49,13 @@ final routes = RouteMap(routes: {
       ),
     );
   },
+  '/detail/final': (info) {
+    return MaterialPage(
+      child: FinalScreen(
+        id: info.queryParameters['id']!,
+      ),
+    );
+  },
   '/detail/:id/final': (info) {
     return MaterialPage(
       child: FinalScreen(
@@ -29,21 +63,9 @@ final routes = RouteMap(routes: {
       ),
     );
   }
-  // '/feed': (_) => MaterialPage(child: FeedPage()),
-  // '/settings': (_) => MaterialPage(child: SettingsPage()),
-  // '/feed/profile/:id': (info) =>
-  //     MaterialPage(child: ProfilePage(id: info.pathParameters['id'])),
 });
 
 class MyObserver extends RoutemasterObserver {
-  // RoutemasterObserver extends NavigatorObserver and
-  // receives all nested Navigator events
-  @override
-  void didPop(Route route, Route? previousRoute) {
-    print('Popped a route');
-  }
-
-  // Routemaster-specific observer method
   @override
   void didChangeRoute(RouteData routeData, Page page) {
     print('New route: ${routeData.path}');
