@@ -18,9 +18,9 @@ final routes = RouteMap(routes: {
           id: id,
           onSelected: (context, id) {
             if (isMobile) {
-              Routemaster.of(context).push('/detail/$id');
+              Routemaster.of(context).push('detail/$id');
             } else {
-              Routemaster.of(context).replace('/?id=$id');
+              Routemaster.of(context).replace('?id=$id');
             }
           },
           onDetailTapped: (context, id) {
@@ -29,11 +29,7 @@ final routes = RouteMap(routes: {
               return;
             }
 
-            // Expected to work, but will incorrectly link to /final
-            // Routemaster.of(context).push('final');
-
-            // Works but will not set the back url to /?id=$id, but instead '/'
-            Routemaster.of(context).push('/detail/final?id=$id');
+            Routemaster.of(context).push('detail/final?id=$id');
           },
         );
       }),
@@ -44,7 +40,7 @@ final routes = RouteMap(routes: {
       child: DetailScreen(
         id: info.pathParameters['id']!,
         onTap: (context, id) {
-          Routemaster.of(context).push('/detail/$id/final');
+          Routemaster.of(context).push('final');
         },
       ),
     );
